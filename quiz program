@@ -1,0 +1,225 @@
+package quiz;
+import javax.swing.*;
+public class GuiQuizAppWithLogin{
+	private static int score = 0;
+	private static int currentQuestionIndex = 0;
+            private static final HashMap<String, String> userCredentials = new    HashMap<>();
+	private static final Question[] questions = {
+			new Question("What is 2+2?", "3", "4", "5", "6", 2),
+            			new Question("Capital of France?", "Berlin", "Madrid", "Paris", "London", 3)
+    	};
+	private static String loggedInUser = "";
+	public static void main (String[] args) {
+			userCredentials.put("user", "pass");
+                      showLoginOrRegisterScreen();
+           }
+	private static void showLoginOrRegisterScreen() {
+			JFrame loginFrame = new JFrame(“Login or Register”);
+			loginFrame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
+			loginFrame.setSize(300, 200);
+			loginFrame.setLayout (new FlowLayout());
+			JButton loginButton = new JButton(“Login”);
+			JButton registerButton = new JButton("Register");
+			loginButton.addActionListener(e -> {
+            				loginFrame.dispose();
+           				showLoginScreen();
+        			});
+			registerButton.addActionListener(e -> {
+            				loginFrame.dispose();
+            				showRegisterScreen();
+        			});
+			loginFrame.add(new JLabel("Welcome to the Quiz App!"));
+        			loginFrame.add(loginButton);
+        			loginFrame.add(registerButton);
+
+        			loginFrame.setVisible(true);
+           }
+
+	private static void showLoginScreen() {
+        JFrame loginFrame = new JFrame("Login");
+        loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        loginFrame.setSize(300, 200);
+        loginFrame.setLayout(new FlowLayout());
+        JLabel usernameLabel = new JLabel("Username:");
+        JTextField usernameField = new JTextField(15);
+        JLabel passwordLabel = new JLabel("Password:");
+        JPasswordField passwordField = new JPasswordField(15);
+        JButton loginButton = new JButton("Login");
+        loginButton.addActionListener(e -> {
+            String username = usernameField.getText();
+            String password = new String(passwordField.getPassword());
+
+            if (userCredentials.containsKey(username) && userCredentials.get(username).equals(password)) {
+                loggedInUser = username;
+                loginFrame.dispose();
+                displayQuiz();
+            } else {
+                JOptionPane.showMessageDialog(loginFrame, "Invalid username or password", "Login Failed", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+         loginFrame.add(usernameLabel);
+        loginFrame.add(usernameField);
+        loginFrame.add(passwordLabel);
+        loginFrame.add(passwordField);
+        loginFrame.add(loginButton);
+
+        loginFrame.setVisible(true);
+ }
+  private static void showRegisterScreen() {
+        JFrame registerFrame = new JFrame("Register");
+      registerFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        registerFrame.setSize(300, 200);
+        registerFrame.setLayout(new FlowLayout());
+
+        JLabel usernameLabel = new JLabel("Choose a Username:");
+        JTextField usernameField = new JTextField(15);
+        JLabel passwordLabel = new JLabel("Choose a Password:");
+        JPasswordField passwordField = new JPasswordField(15);
+        JButton registerButton = new JButton("Register");
+
+        registerButton.addActionListener(e -> {
+            String username = usernameField.getText();
+            String password = new String(passwordField.getPassword());
+
+            if (username.isEmpty() || password.isEmpty()) {
+                JOptionPane.showMessageDialog(registerFrame, "Username and password cannot be empty.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+            } else if (userCredentials.containsKey(username)) {
+                JOptionPane.showMessageDialog(registerFrame, "Username already exists.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+            } else {
+                userCredentials.put(username, password);
+                JOptionPane.showMessageDialog(registerFrame, "Registration successful! Please login.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                registerFrame.dispose();
+                showLoginScreen();
+            }
+        });
+         
+         registerFrame.add(usernameLabel);
+        registerFrame.add(usernameField);
+        registerFrame.add(passwordLabel);
+        registerFrame.add(passwordField);
+        registerFrame.add(registerButton);
+
+        registerFrame.setVisible(true);
+  }
+   private static void displayQuiz() {
+        JFrame frame = new JFrame("Quiz Application");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(500, 400);
+        frame.setLayout(new BorderLayout());
+
+        displayQuestion(frame);
+
+        frame.setVisible(true);
+    }
+
+    private static void displayQuestion(JFrame frame) {
+        if (currentQuestionIndex < questions.length) {
+            Question question = questions[currentQuestionIndex];
+
+            frame.getContentPane().removeAll();
+
+            JLabel questionLabel = new JLabel("Question: " + question.getText());
+            questionLabel.setFont(new Font("Arial", Font.BOLD, 14));
+            frame.add(questionLabel, BorderLayout.NORTH);
+
+            JRadioButton option1Btn = new JRadioButton(question.getOption1());
+            JRadioButton option2Btn = new JRadioButton(question.getOption2());
+            JRadioButton option3Btn = new JRadioButton(question.getOption3());
+            JRadioButton option4Btn = new JRadioButton(question.getOption4());
+
+            ButtonGroup optionsGroup = new ButtonGroup();
+            optionsGroup.add(option1Btn);
+            optionsGroup.add(option2Btn);
+            optionsGroup.add(option3Btn);
+            optionsGroup.add(option4Btn);
+
+            JPanel optionsPanel = new JPanel(new GridLayout(4, 1));
+            optionsPanel.add(option1Btn);
+            optionsPanel.add(option2Btn);
+            optionsPanel.add(option3Btn);
+            optionsPanel.add(option4Btn);
+            frame.add(optionsPanel, BorderLayout.CENTER);
+
+            JButton submitButton = new JButton("Submit Answer");
+            submitButton.addActionListener(e -> {
+                if ((question.getCorrectAnswer() == 1 && option1Btn.isSelected()) ||
+                        (question.getCorrectAnswer() == 2 && option2Btn.isSelected()) ||
+                        (question.getCorrectAnswer() == 3 && option3Btn.isSelected()) ||
+                        (question.getCorrectAnswer() == 4 && option4Btn.isSelected())) {
+                    score++;
+                }
+                currentQuestionIndex++;
+                displayQuestion(frame);
+            });
+            frame.add(submitButton, BorderLayout.SOUTH);
+
+            frame.revalidate();
+            frame.repaint();
+        } else {
+            showResults(frame);
+        }
+    }
+
+    private static void showResults(JFrame frame) {
+        frame.getContentPane().removeAll();
+
+        JLabel resultLabel = new JLabel("Quiz Completed! Your Score: " + score + "/" + questions.length);
+        resultLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        resultLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        frame.add(resultLabel, BorderLayout.CENTER);
+
+        JButton logoutButton = new JButton("Logout");
+        logoutButton.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(frame, "Are you sure you want to logout?", "Logout", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                score = 0;
+                currentQuestionIndex = 0;
+                loggedInUser = "";
+                frame.dispose();
+                showLoginOrRegisterScreen();
+            }
+        });
+        frame.add(logoutButton, BorderLayout.SOUTH);
+
+        frame.revalidate();
+        frame.repaint();
+    }
+}
+
+class Question {
+    private final String text;
+    private final String option1;
+    private final String option2;
+    private final String option3;
+    private final String option4;
+    private final int correctAnswer;
+
+    public Question(String text, String option1, String option2, String option3, String option4, int correctAnswer) {
+        this.text = text;
+        this.option1 = option1;
+        this.option2 = option2;
+        this.option3 = option3;
+        this.option4 = option4;
+        this.correctAnswer = correctAnswer;
+    }
+
+    public String getText() {
+        return text;
+    }
+    public String getOption1() {
+        return option1;
+    }
+    public String getOption2() {
+        return option2;
+    }
+    public String getOption3() {
+        return option3;
+    }
+    public String getOption4() {
+        return option4;
+    }
+    public int getCorrectAnswer() {
+        return correctAnswer;
+    }
+}
+
